@@ -28,19 +28,15 @@ use core_question\local\bank\plugin_features_base;
 use core_question\local\bank\view;
 
 /**
- * Registers the single proof-of-concept custom field filter.
+ * Registers the combined custom fields filter.
  */
 class plugin_feature extends plugin_features_base {
 
     #[\Override]
     public function get_question_filters(?view $qbank = null): array {
-        // Only offer the filter if an admin has configured a target field.
-        $shortname = get_config('qbank_cffpoc', 'fieldshortname');
-        if (empty($shortname)) {
-            return [];
-        }
+        // Automatically covers all configured question custom fields; nothing to configure.
         return [
-            new customfield_condition($qbank),
+            new customfields_condition($qbank),
         ];
     }
 }

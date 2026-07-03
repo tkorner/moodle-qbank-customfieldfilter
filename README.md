@@ -1,120 +1,103 @@
-# qbank_cffpoc — Proof of Concept
+# qbank_cffpoc
 
-**Goal:** verify the question-bank filter API on a real Moodle 5.2 instance before
-building the full dynamic plugin. This PoC adds **one** filter for **one**
-admin-chosen custom field (checkbox or select).
+A Moodle **Question Bank filter plugin** that makes every configured question
+custom field filterable/searchable in the Question Bank UI at once, via a single
+combined filter chip.
 
-- Install path: `{moodle_root}/public/question/bank/cffpoc/`  (note: `/public/` on 5.1+)
+Working name; being prototyped here for eventual contribution into the
+core-bundled `qbank_customfields` plugin (see "Upstream intent" in `CLAUDE.md`
+for the full rationale and coordination context).
+
 - Depends on: `qbank_customfields`
+- Status: Alpha, multi-field combined filter (see `CLAUDE.md` for the full
+  architecture writeup and the API constraints that shaped this design)
 
 ---
 
-## What we are verifying
+## Install / environment
 
-This PoC exists to confirm three uncertain API points against your instance,
-because the code was written from core source, not from a running system:
+The plugin lives on the host at `plugins/qbank/cffpoc/` and is live-mounted into
+the Moodle container via `docker-compose.yml`:
 
-1. **The condition lifecycle.** Does `plugin_feature::get_question_filters()`
-   correctly surface a filter, and does `customfield_condition` extend
-   `core_question\local\bank\condition` without fatal errors?
-2. **The value column.** Checkbox/select values are assumed to live in
-   `{customfield_data}.intvalue`. This must be confirmed with a real row.
-3. **The select option indexing.** Options are assumed 1-based. Confirm against
-   a real select field's stored value.
-
----
-
-## Setup on your instance
-
-Container: `moodle-test-moodle-1`, webroot `/var/www/html`, code under `/public`.
-
-```bash
-# 1. Copy the plugin in (from the host, adjust source path):
-docker cp ./qbank_cffpoc moodle-test-moodle-1:/var/www/html/public/question/bank/cffpoc
-
-# 2. Fix ownership (image runs as nobody):
-docker exec --user root moodle-test-moodle-1 chown -R nobody:nobody \
-  /var/www/html/public/question/bank/cffpoc
-
-# 3. Run the upgrade:
-docker exec moodle-test-moodle-1 php /var/www/html/public/admin/cli/upgrade.php --non-interactive
+```yaml
+- ./plugins/qbank/cffpoc:/var/www/html/public/question/bank/cffpoc
 ```
 
-Then in the UI:
-1. *Site admin → Plugins → Question custom fields* — create a **checkbox** field,
-   e.g. shortname `reviewed`. Add a couple of questions, tick it on some.
-2. *Site admin → Plugins → Question bank plugins* — enable "Custom field filter (PoC)".
-3. *Site admin → Plugins → Question bank plugins → Custom field filter (PoC) settings*
-   — set "Custom field shortname" to `reviewed`.
-4. Open a course question bank → Filters → you should see a "Reviewed" filter
-   offering Yes/No.
+No manual copying or ownership fixes are needed — edits on the host are picked
+up immediately (PHP changes still need a cache purge; structural changes need
+an upgrade run):
+
+```bash
+docker compose exec moodle php /var/www/html/admin/cli/purge_caches.php
+docker compose exec moodle php /var/www/html/admin/cli/upgrade.php --non-interactive
+```
+
+There is no plugin settings page — the filter automatically covers every
+question custom field the current user is allowed to see. Nothing to configure
+beyond creating the custom fields themselves under
+*Site admin → Question bank → Custom fields* (component `qbank_customfields`,
+area `question`).
 
 ---
 
-## The three verification commands
+## How it works
 
-Run these and check the results against the assumptions:
+One combined filter ("Custom fields") lists every visible field's options as a
+flat list, using a composite `fieldid:optionvalue` value per option (e.g.
+`Bloom: Verstehen`). Selected values are grouped by field when building the
+SQL: values within the same field are OR'd, different fields are AND'd
+together. Full rationale — including why this is *one* filter instance
+instead of one-per-field — is in `CLAUDE.md`.
 
-```bash
-# A. Confirm the value column. After ticking the checkbox on a question,
-#    inspect the stored row. Expect intvalue = 1, value/charvalue empty.
-docker exec moodle-test-moodle-1 php /var/www/html/public/admin/cli/cfg.php 2>/dev/null; \
-docker exec moodle-test-moodle-1 sh -c 'php -r "
-define(\"CLI_SCRIPT\", true);
-require(\"/var/www/html/public/config.php\");
-\$rows = \$DB->get_records(\"customfield_data\", null, \"\", \"id,fieldid,instanceid,intvalue,value\", 0, 5);
-foreach (\$rows as \$r) { echo implode(\" | \", (array)\$r), PHP_EOL; }
-"'
-```
-
-```bash
-# B. Run the PoC unit tests (confirms no fatal errors in the class structure).
-#    Requires the phpunit test environment (see note below).
-docker exec moodle-test-moodle-1 sh -c 'cd /var/www/html && vendor/bin/phpunit --filter qbank_cffpoc' 2>&1 | tail -20
-```
-
-```bash
-# C. Watch the live filter SQL. Enable full debugging in the UI first
-#    (Site admin → Development → Debugging → DEVELOPER), then apply the filter
-#    and check that questions filter correctly. If results are wrong, the
-#    intvalue assumption (A) is the first thing to check.
-```
+Checkbox and select values are read from `{customfield_data}.intvalue` (select
+options are 1-based indexes into the field's newline-separated option list).
 
 ---
 
-## PHPUnit environment note
+## Testing
 
-This Bitnami-style/Alpine image may not have the phpunit test DB initialised.
-If command B fails with "PHPUnit is not configured", initialise it once:
+### Automated (PHPUnit)
 
 ```bash
-# Requires a SECOND empty database + $CFG->phpunit_* in config.php.
-docker exec moodle-test-moodle-1 php /var/www/html/public/admin/tool/phpunit/cli/init.php
+docker compose exec moodle sh -c 'cd /var/www/html && vendor/bin/phpunit --testsuite qbank_cffpoc_testsuite'
 ```
 
-If that is too heavy for the PoC, skip B and rely on A + C — the manual UI test
-plus the DB inspection is sufficient to validate the three API points.
+`tests/condition_test.php` covers: a single field/value, multiple values on
+the same field (OR), multiple fields (AND), no selection, and a field with no
+view permission being excluded from the option list. Fixtures are built with
+the real `core_customfield` and `core_question` generators, no mocking.
+
+If the PHPUnit test environment hasn't been initialised yet in this container,
+set it up once (needs `$CFG->phpunit_prefix` / `$CFG->phpunit_dataroot` in
+`config.php`):
+
+```bash
+docker compose exec moodle php /var/www/html/admin/tool/phpunit/cli/init.php
+```
+
+### Manual (UI)
+
+1. Configure at least 2 question custom fields (*Site admin → Question bank →
+   Custom fields*), e.g. `bloom` (select) and a second select/checkbox field.
+2. Open the **Question Bank** in any course.
+3. A single **"Custom fields"** filter should appear in the filter bar,
+   listing every option from every configured field (e.g. "Bloom: Verstehen",
+   "Difficulty: Hard").
+4. Select two values from the SAME field → should return questions matching
+   EITHER value.
+5. Select one value from each of TWO DIFFERENT fields → should return only
+   questions matching BOTH.
 
 ---
 
-## What to report back
+## Known limitations
 
-After running A and the UI test, tell me:
-
-1. **Column:** Is the value in `intvalue` (as assumed) or in `value`/`charvalue`?
-2. **Select indexing:** For a select field, what integer is stored for the 2nd option?
-3. **Did the filter appear and filter correctly?** Any PHP errors with debugging on?
-
-With those three answers I will either confirm the design and build the full
-dynamic plugin, or correct the value-column / indexing logic first.
-
----
-
-## Known PoC limitations (by design)
-
-- One field only, chosen by admin setting. The full plugin iterates all fields.
-- `get_condition_key()` returns a single fixed key `cffpoc`. The full plugin
-  needs a unique key per field (one condition subclass per field).
-- No JS filtertype override — uses the core autocomplete. Fine for verification.
-- Unit test covers only the no-field path; the positive SQL path is verified
-  manually (command A + C) because it needs a real `field_controller`.
+- Only `select` and `checkbox` field types are handled. `text`/`date`/other
+  types need a UI design decision before they can join the same combined
+  filter (free text vs. fixed options) — see the TODOs in `CLAUDE.md`.
+- No column implementation needed here — `qbank_customfields` already
+  provides a column per field; only the filter was missing.
+- `get_condition_key()` is a single fixed string (`'customfields'`) for the
+  whole plugin. This is intentional, not a shortcut: `condition::get_condition_key()`
+  is abstract *and static*, so it can't return per-instance state — see
+  "Why NOT one filter instance per field" in `CLAUDE.md`.

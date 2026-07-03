@@ -1,4 +1,3 @@
-<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,24 +14,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings for qbank_cffpoc.
+ * Filter type for the combined custom fields filter.
  *
- * For the proof of concept the admin selects ONE custom field (by shortname)
- * that the filter will operate on. The full plugin will iterate all fields.
+ * The base core/datafilter/filtertype class's `values` getter runs every raw option value
+ * through parseInt(), which silently truncates our composite "fieldid:optionvalue" values
+ * (e.g. "12:3" becomes 12). This override keeps the raw string values intact, the same way
+ * core/datafilter/filtertypes/keyword does for free-text values.
  *
- * @package    qbank_cffpoc
+ * @module     qbank_cffpoc/customfields_filtertype
  * @copyright  2026 Thomas <thomas@example.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+import Filter from 'core/datafilter/filtertype';
 
-defined('MOODLE_INTERNAL') || die();
-
-if ($hassiteconfig) {
-    $settings->add(new admin_setting_configtext(
-        'qbank_cffpoc/fieldshortname',
-        get_string('fieldshortname', 'qbank_cffpoc'),
-        get_string('fieldshortname_desc', 'qbank_cffpoc'),
-        '',
-        PARAM_ALPHANUMEXT
-    ));
+export default class extends Filter {
+    /**
+     * Composite "fieldid:optionvalue" values must be sent to the server unparsed.
+     *
+     * @returns {Array}
+     */
+    get values() {
+        return this.rawValues;
+    }
 }

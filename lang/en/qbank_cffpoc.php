@@ -25,6 +25,5 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Custom field filter (PoC)';
-$string['fieldshortname'] = 'Custom field shortname';
-$string['fieldshortname_desc'] = 'The shortname of the single checkbox or select question custom field this proof-of-concept filter operates on.';
+$string['filtertitle'] = 'Custom fields';
 $string['privacy:metadata'] = 'The custom field filter PoC plugin does not store any personal data.';

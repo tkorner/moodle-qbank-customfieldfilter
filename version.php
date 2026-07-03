@@ -25,10 +25,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qbank_cffpoc';
-$plugin->version   = 2026062900;
+$plugin->version   = 2026070301;
 $plugin->requires  = 2025100600; // Moodle 5.1+.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.0.1-poc';
+$plugin->release   = '0.1.0-poc';
 
 $plugin->dependencies = [
     'qbank_customfields' => ANY_VERSION,
