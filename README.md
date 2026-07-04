@@ -44,10 +44,11 @@ area `question`).
 
 One combined filter ("Custom fields") lists every visible field's options as a
 flat list, using a composite `fieldid:optionvalue` value per option (e.g.
-`Bloom: Verstehen`). Selected values are grouped by field when building the
-SQL: values within the same field are OR'd, different fields are AND'd
-together. Full rationale — including why this is *one* filter instance
-instead of one-per-field — is in `CLAUDE.md`.
+`Bloom: Understand`). Selected values are grouped by field when building the
+SQL: values within the same field are OR'd; different fields are combined
+according to the filter's join type (All/Any/None), matching the selector
+already shown in the Question Bank filter UI. Full rationale — including why
+this is *one* filter instance instead of one-per-field — is in `CLAUDE.md`.
 
 Checkbox and select values are read from `{customfield_data}.intvalue` (select
 options are 1-based indexes into the field's newline-separated option list).
@@ -63,9 +64,10 @@ docker compose exec moodle sh -c 'cd /var/www/html && vendor/bin/phpunit --tests
 ```
 
 `tests/condition_test.php` covers: a single field/value, multiple values on
-the same field (OR), multiple fields (AND), no selection, and a field with no
-view permission being excluded from the option list. Fixtures are built with
-the real `core_customfield` and `core_question` generators, no mocking.
+the same field (OR), multiple fields under each join type (All/Any/None), no
+selection, and a field with no view permission being excluded from the option
+list. Fixtures are built with the real `core_customfield` and `core_question`
+generators, no mocking.
 
 If the PHPUnit test environment hasn't been initialised yet in this container,
 set it up once (needs `$CFG->phpunit_prefix` / `$CFG->phpunit_dataroot` in
@@ -81,12 +83,13 @@ docker compose exec moodle php /var/www/html/admin/tool/phpunit/cli/init.php
    Custom fields*), e.g. `bloom` (select) and a second select/checkbox field.
 2. Open the **Question Bank** in any course.
 3. A single **"Custom fields"** filter should appear in the filter bar,
-   listing every option from every configured field (e.g. "Bloom: Verstehen",
+   listing every option from every configured field (e.g. "Bloom: Understand",
    "Difficulty: Hard").
 4. Select two values from the SAME field → should return questions matching
    EITHER value.
-5. Select one value from each of TWO DIFFERENT fields → should return only
-   questions matching BOTH.
+5. Select one value from each of TWO DIFFERENT fields with the default join
+   type (All) → should return only questions matching BOTH; switching the
+   filter's join type to Any should widen the results to EITHER field.
 
 ---
 
@@ -101,3 +104,21 @@ docker compose exec moodle php /var/www/html/admin/tool/phpunit/cli/init.php
   whole plugin. This is intentional, not a shortcut: `condition::get_condition_key()`
   is abstract *and static*, so it can't return per-instance state — see
   "Why NOT one filter instance per field" in `CLAUDE.md`.
+
+---
+
+## Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs
+[`moodle-plugin-ci`](https://github.com/moodlehq/moodle-plugin-ci) on every
+push/PR to `main`: linting, the Moodle code checker, PHPDoc checks, Mustache
+lint, PHPUnit and Behat, against Moodle's minimum-supported branch
+(`MOODLE_501_STABLE`, matching `version.php`'s `5.1+` requirement) and `main`
+for forward-compatibility. The Grunt step is non-blocking for now — see the
+AMD toolchain caveat in `CLAUDE.md`.
+
+---
+
+## Author
+
+Thomas Korner — [github.com/tkorner](https://github.com/tkorner)

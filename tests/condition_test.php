@@ -18,18 +18,19 @@
  * Tests for qbank_cffpoc.
  *
  * @package    qbank_cffpoc
- * @copyright  2026 Thomas <thomas@example.com>
+ * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
+ * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace qbank_cffpoc;
 
 use advanced_testcase;
+use core\output\datafilter;
 use core_customfield\field_controller;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \qbank_cffpoc\customfields_condition
- */
+#[CoversClass(customfields_condition::class)]
 final class condition_test extends advanced_testcase {
 
     /**
@@ -69,22 +70,22 @@ final class condition_test extends advanced_testcase {
             'itemid' => 0,
         ]);
 
-        $bloom = $this->create_select_field($cfcategory->get('id'), 'bloom', ['Erinnern', 'Verstehen', 'Anwenden']);
+        $bloom = $this->create_select_field($cfcategory->get('id'), 'bloom', ['Remember', 'Understand', 'Apply']);
         $difficulty = $this->create_select_field($cfcategory->get('id'), 'difficulty', ['Easy', 'Hard']);
 
         $qgenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $qcategory = $qgenerator->create_question_category();
 
-        // q1: bloom=Erinnern(1) only.
+        // q1: bloom=Remember(1) only.
         $q1 = $qgenerator->create_question('truefalse', null, ['category' => $qcategory->id, 'name' => 'q1']);
         $cfgenerator->add_instance_data($bloom, $q1->id, 1);
 
-        // q2: bloom=Verstehen(2), difficulty=Hard(2) -- matches both bloom:2 and difficulty:2.
+        // q2: bloom=Understand(2), difficulty=Hard(2) -- matches both bloom:2 and difficulty:2.
         $q2 = $qgenerator->create_question('truefalse', null, ['category' => $qcategory->id, 'name' => 'q2']);
         $cfgenerator->add_instance_data($bloom, $q2->id, 2);
         $cfgenerator->add_instance_data($difficulty, $q2->id, 2);
 
-        // q3: bloom=Verstehen(2), difficulty=Easy(1) -- matches bloom:2 but NOT difficulty:2.
+        // q3: bloom=Understand(2), difficulty=Easy(1) -- matches bloom:2 but NOT difficulty:2.
         $q3 = $qgenerator->create_question('truefalse', null, ['category' => $qcategory->id, 'name' => 'q3']);
         $cfgenerator->add_instance_data($bloom, $q3->id, 2);
         $cfgenerator->add_instance_data($difficulty, $q3->id, 1);
@@ -155,7 +156,7 @@ final class condition_test extends advanced_testcase {
     }
 
     /**
-     * Selecting one value from each of TWO DIFFERENT fields is AND'd: both must match.
+     * Selecting one value from each of TWO DIFFERENT fields is AND'd by default (JOINTYPE_ALL).
      */
     public function test_multiple_fields_are_anded(): void {
         $this->resetAfterTest();
@@ -165,10 +166,43 @@ final class condition_test extends advanced_testcase {
         $matched = $this->matched_question_ids([
             "{$bloom->get('id')}:2",
             "{$difficulty->get('id')}:2",
-        ]);
+        ], datafilter::JOINTYPE_ALL);
 
         // Only q2 has bloom=2 AND difficulty=2; q3 has bloom=2 but difficulty=1.
         $this->assertEqualsCanonicalizing([$q2->id], $matched);
+    }
+
+    /**
+     * With JOINTYPE_ANY, selecting one value from each of TWO DIFFERENT fields is OR'd: matching
+     * either field is enough.
+     */
+    public function test_multiple_fields_are_ored_with_jointype_any(): void {
+        $this->resetAfterTest();
+        [$bloom, $difficulty, $questions] = $this->setup_fields_and_questions();
+        [, $q2, $q3] = $questions;
+
+        $matched = $this->matched_question_ids([
+            "{$bloom->get('id')}:2",
+            "{$difficulty->get('id')}:2",
+        ], datafilter::JOINTYPE_ANY);
+
+        // q2 (bloom=2 and difficulty=2) and q3 (bloom=2) both match at least one; q1 and q4 match
+        // neither.
+        $this->assertEqualsCanonicalizing([$q2->id, $q3->id], $matched);
+    }
+
+    /**
+     * With JOINTYPE_NONE, only questions matching none of the selected values (in any field) match.
+     */
+    public function test_no_field_matches_with_jointype_none(): void {
+        $this->resetAfterTest();
+        [$bloom, , $questions] = $this->setup_fields_and_questions();
+        [$q1, , , $q4] = $questions;
+
+        $matched = $this->matched_question_ids(["{$bloom->get('id')}:2"], datafilter::JOINTYPE_NONE);
+
+        // q1 (bloom=1) and q4 (no data) don't have bloom=2; q2 and q3 do, so they're excluded.
+        $this->assertEqualsCanonicalizing([$q1->id, $q4->id], $matched);
     }
 
     /**

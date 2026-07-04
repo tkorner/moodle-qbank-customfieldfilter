@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for qbank_cffpoc (proof of concept).
+ * Upgrade steps for qbank_cffpoc.
  *
  * @package    qbank_cffpoc
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
@@ -25,12 +25,21 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'qbank_cffpoc';
-$plugin->version   = 2026070401;
-$plugin->requires  = 2025100600; // Moodle 5.1+.
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.0-poc';
+/**
+ * Upgrade steps for qbank_cffpoc.
+ *
+ * @param int $oldversion The version we are upgrading from.
+ * @return bool
+ */
+function xmldb_qbank_cffpoc_upgrade(int $oldversion): bool {
+    if ($oldversion < 2026070401) {
+        // 'fieldshortname' was the single-field PoC's settings.php config; the combined filter
+        // covers every field automatically and never reads it, but removing settings.php alone
+        // does not clean up a value already saved by earlier installs.
+        unset_config('fieldshortname', 'qbank_cffpoc');
 
-$plugin->dependencies = [
-    'qbank_customfields' => ANY_VERSION,
-];
+        upgrade_plugin_savepoint(true, 2026070401, 'qbank', 'cffpoc');
+    }
+
+    return true;
+}

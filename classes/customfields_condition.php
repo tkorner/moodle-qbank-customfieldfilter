@@ -18,7 +18,8 @@
  * Combined filter condition for all configured question custom fields.
  *
  * @package    qbank_cffpoc
- * @copyright  2026 Thomas <thomas@example.com>
+ * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
+ * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -69,23 +70,44 @@ class customfields_condition extends condition {
         $this->selectedvalues = $this->filter->values ?? [];
     }
 
+    /**
+     * Return the unique condition key for this filter.
+     *
+     * @return string
+     */
     #[\Override]
     public static function get_condition_key() {
         return 'customfields';
     }
 
+    /**
+     * Return title of the condition.
+     *
+     * @return string
+     */
     #[\Override]
     public function get_title() {
         return get_string('filtertitle', 'qbank_cffpoc');
     }
 
+    /**
+     * Return the Javascript filter class to provide the UI for this condition.
+     *
+     * The default core/datafilter/filtertype JS parses every value with parseInt(), which
+     * would truncate our composite "fieldid:optionvalue" values (e.g. "12:3" -> 12).
+     *
+     * @return string
+     */
     #[\Override]
     public function get_filter_class() {
-        // The default core/datafilter/filtertype JS parses every value with parseInt(), which
-        // would truncate our composite "fieldid:optionvalue" values (e.g. "12:3" -> 12).
         return 'qbank_cffpoc/customfields_filtertype';
     }
 
+    /**
+     * Initial values of the condition: one option per visible value of every configured field.
+     *
+     * @return array
+     */
     #[\Override]
     public function get_initial_values() {
         $handler = question_handler::create();
@@ -147,8 +169,13 @@ class customfields_condition extends condition {
     /**
      * Build the WHERE clause from the selected composite filter values.
      *
-     * Selected values are grouped by field id: within the same field, values are ORed (a
-     * question can only hold one value per field); across different fields, groups are ANDed.
+     * Selected values are always grouped by field id first: within the same field, values are
+     * ORed (a question can only hold one value per field). How the per-field groups are then
+     * combined depends on the filter's join type, matching {@see \qbank_tagquestion\tag_condition}:
+     * - JOINTYPE_ALL (default): groups are ANDed (question must match every selected field).
+     * - JOINTYPE_ANY: groups are ORed (question must match at least one selected field).
+     * - JOINTYPE_NONE: each group's IN becomes NOT IN, groups stay ANDed (question must match
+     *   none of the selected values in any field).
      *
      * @param array $filter ['values' => string[] "fieldid:optionvalue", 'jointype' => int].
      * @return array [string $where, array $params].
@@ -194,12 +221,19 @@ class customfields_condition extends condition {
             $params += $inparams;
         }
 
-        // Values within a field are ORed (via IN); different fields are ANDed together.
-        $where = implode(' AND ', $wheres);
+        // Different fields are ORed together for "match any", ANDed otherwise (see docblock above).
+        $glue = ((int) $jointype === datafilter::JOINTYPE_ANY) ? ' OR ' : ' AND ';
+        $where = implode($glue, $wheres);
 
         return [$where, $params];
     }
 
+    /**
+     * Whether customisation is allowed. Only the fixed options built from configured field
+     * values are supported, so no.
+     *
+     * @return bool
+     */
     #[\Override]
     public function allow_custom() {
         return false;

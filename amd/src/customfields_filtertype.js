@@ -22,7 +22,8 @@
  * core/datafilter/filtertypes/keyword does for free-text values.
  *
  * @module     qbank_cffpoc/customfields_filtertype
- * @copyright  2026 Thomas <thomas@example.com>
+ * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
+ * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import Filter from 'core/datafilter/filtertype';
