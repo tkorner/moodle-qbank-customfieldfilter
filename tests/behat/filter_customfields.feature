@@ -86,8 +86,10 @@ Feature: Filter questions by custom field values
     And I should not see "no custom field" in the "categoryquestions" "table"
 
   @javascript
-  Scenario: Values from different fields default to matching all of them
-    When I apply question bank filter "Custom fields" with value "Bloom: Understand,Difficulty: Hard"
+  Scenario: Switching the join type to All matches questions with all of the selected fields
+    Given I apply question bank filter "Custom fields" with value "Bloom: Understand,Difficulty: Hard"
+    When I set the field "Match" in the "Filter 3" "fieldset" to "All"
+    And I click on "Apply filters" "button"
     Then I should see "understand hard" in the "categoryquestions" "table"
     And I should not see "understand only" in the "categoryquestions" "table"
     And I should not see "apply only" in the "categoryquestions" "table"

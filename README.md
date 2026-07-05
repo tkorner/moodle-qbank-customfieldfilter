@@ -101,9 +101,10 @@ default component-name tag filter picks it up.
    "Difficulty: Hard").
 4. Select two values from the SAME field → should return questions matching
    EITHER value.
-5. Select one value from each of TWO DIFFERENT fields with the default join
-   type (All) → should return only questions matching BOTH; switching the
-   filter's join type to Any should widen the results to EITHER field.
+5. Select one value from each of TWO DIFFERENT fields. The filter's "Match"
+   selector shows "Any" pre-selected at first (a core UI quirk — see
+   `CLAUDE.md`'s "UI caveat" note); switch it to All → should return only
+   questions matching BOTH; switch to Any → EITHER field.
 
 ---
 
