@@ -1,4 +1,4 @@
-@qbank_customfieldfilter @core_question @core_customfield
+@qbank @qbank_customfieldfilter @core_question @core_customfield
 Feature: Filter questions by custom field values
   In order to find questions with specific custom field values
   As a teacher
@@ -90,7 +90,7 @@ Feature: Filter questions by custom field values
   @javascript
   Scenario: Switching the join type to Any matches questions with any of the selected fields
     Given I apply question bank filter "Custom fields" with value "Bloom: Understand,Difficulty: Hard"
-    When I set the field "Match" in the "Filter 2" "fieldset" to "Any"
+    When I set the field "Match" in the "Filter 3" "fieldset" to "Any"
     And I click on "Apply filters" "button"
     Then I should see "understand only" in the "categoryquestions" "table"
     And I should see "understand hard" in the "categoryquestions" "table"
@@ -101,7 +101,7 @@ Feature: Filter questions by custom field values
   @javascript
   Scenario: Switching the join type to None matches questions with none of the selected fields
     Given I apply question bank filter "Custom fields" with value "Bloom: Understand,Difficulty: Hard"
-    When I set the field "Match" in the "Filter 2" "fieldset" to "None"
+    When I set the field "Match" in the "Filter 3" "fieldset" to "None"
     And I click on "Apply filters" "button"
     Then I should see "apply only" in the "categoryquestions" "table"
     And I should see "create easy" in the "categoryquestions" "table"
