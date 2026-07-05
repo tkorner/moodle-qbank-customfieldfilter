@@ -58,7 +58,8 @@ Feature: Filter questions by custom field values
       | Difficulty | Easy   |
     And I press "id_submitbutton"
     # "no custom field" is left untouched: no {customfield_data} row exists for it at all.
-    And I am on the "Qbank 1" "core_question > question bank" page
+    # Deliberately NOT navigating to the question bank page directly here (unlike core's own
+    # filter_questions_by_tag.feature) — the submit above redirects back there already.
 
   @javascript
   Scenario: Sanity check - the question list renders before touching the custom fields filter
