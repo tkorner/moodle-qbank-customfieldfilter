@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy provider for qbank_cffpoc.
+ * Privacy provider for qbank_customfieldfilter.
  *
- * @package    qbank_cffpoc
+ * @package    qbank_customfieldfilter
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
  * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace qbank_cffpoc\privacy;
+namespace qbank_customfieldfilter\privacy;
 
 use core_privacy\local\metadata\null_provider;
 
@@ -31,7 +31,6 @@ use core_privacy\local\metadata\null_provider;
  * This plugin stores no personal data.
  */
 class provider implements null_provider {
-
     #[\Override]
     public static function get_reason(): string {
         return 'privacy:metadata';

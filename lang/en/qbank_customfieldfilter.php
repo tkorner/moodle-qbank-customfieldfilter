@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'qbank_cffpoc'.
+ * Strings for component 'qbank_customfieldfilter'.
  *
- * @package    qbank_cffpoc
+ * @package    qbank_customfieldfilter
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
  * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,6 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Custom field filter (PoC)';
 $string['filtertitle'] = 'Custom fields';
-$string['privacy:metadata'] = 'The custom field filter PoC plugin does not store any personal data.';
+$string['pluginname'] = 'Custom field filter';
+$string['privacy:metadata'] = 'The custom field filter plugin does not store any personal data.';

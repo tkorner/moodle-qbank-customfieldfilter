@@ -17,13 +17,13 @@
 /**
  * Combined filter condition for all configured question custom fields.
  *
- * @package    qbank_cffpoc
+ * @package    qbank_customfieldfilter
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
  * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace qbank_cffpoc;
+namespace qbank_customfieldfilter;
 
 use context;
 use context_system;
@@ -46,7 +46,6 @@ use qbank_customfields\customfield\question_handler;
  * Checkbox and select values are stored in {customfield_data}.intvalue.
  */
 class customfields_condition extends condition {
-
     /** @var int Default join type. */
     const JOINTYPE_DEFAULT = datafilter::JOINTYPE_ALL;
 
@@ -87,7 +86,7 @@ class customfields_condition extends condition {
      */
     #[\Override]
     public function get_title() {
-        return get_string('filtertitle', 'qbank_cffpoc');
+        return get_string('filtertitle', 'qbank_customfieldfilter');
     }
 
     /**
@@ -100,7 +99,7 @@ class customfields_condition extends condition {
      */
     #[\Override]
     public function get_filter_class() {
-        return 'qbank_cffpoc/customfields_filtertype';
+        return 'qbank_customfieldfilter/customfields_filtertype';
     }
 
     /**
@@ -208,8 +207,8 @@ class customfields_condition extends condition {
         $groupindex = 0;
         foreach ($byfield as $fieldid => $optionvalues) {
             $groupindex++;
-            [$insql, $inparams] = $DB->get_in_or_equal($optionvalues, SQL_PARAMS_NAMED, "cffpocval{$groupindex}_");
-            $fieldparam = "cffpocfield{$groupindex}";
+            [$insql, $inparams] = $DB->get_in_or_equal($optionvalues, SQL_PARAMS_NAMED, "cffval{$groupindex}_");
+            $fieldparam = "cffield{$groupindex}";
 
             // Checkbox and select store their value in intvalue.
             $wheres[] = "q.id {$operator}IN (

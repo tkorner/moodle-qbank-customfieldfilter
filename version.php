@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for qbank_cffpoc (proof of concept).
+ * Version metadata for qbank_customfieldfilter.
  *
- * @package    qbank_cffpoc
+ * @package    qbank_customfieldfilter
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
  * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'qbank_cffpoc';
-$plugin->version   = 2026070401;
+$plugin->component = 'qbank_customfieldfilter';
+$plugin->version   = 2026070501;
 $plugin->requires  = 2025100600; // Moodle 5.1+.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.0-poc';
+$plugin->release   = '0.2.0';
 
 $plugin->dependencies = [
     'qbank_customfields' => ANY_VERSION,

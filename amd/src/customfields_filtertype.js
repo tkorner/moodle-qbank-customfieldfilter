@@ -21,7 +21,7 @@
  * (e.g. "12:3" becomes 12). This override keeps the raw string values intact, the same way
  * core/datafilter/filtertypes/keyword does for free-text values.
  *
- * @module     qbank_cffpoc/customfields_filtertype
+ * @module     qbank_customfieldfilter/customfields_filtertype
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
  * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

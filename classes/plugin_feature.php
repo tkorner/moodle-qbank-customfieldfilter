@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin features entry point for qbank_cffpoc.
+ * Plugin features entry point for qbank_customfieldfilter.
  *
- * @package    qbank_cffpoc
+ * @package    qbank_customfieldfilter
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
  * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace qbank_cffpoc;
+namespace qbank_customfieldfilter;
 
 use core_question\local\bank\plugin_features_base;
 use core_question\local\bank\view;
@@ -32,7 +32,6 @@ use core_question\local\bank\view;
  * Registers the combined custom fields filter.
  */
 class plugin_feature extends plugin_features_base {
-
     #[\Override]
     public function get_question_filters(?view $qbank = null): array {
         // Automatically covers all configured question custom fields; nothing to configure.

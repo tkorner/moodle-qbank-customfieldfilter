@@ -1,4 +1,4 @@
-# qbank_cffpoc
+# qbank_customfieldfilter
 
 A Moodle **Question Bank filter plugin** that makes every configured question
 custom field filterable/searchable in the Question Bank UI at once, via a single
@@ -16,11 +16,11 @@ for the full rationale and coordination context).
 
 ## Install / environment
 
-The plugin lives on the host at `plugins/qbank/cffpoc/` and is live-mounted into
+The plugin lives on the host at `plugins/qbank/customfieldfilter/` and is live-mounted into
 the Moodle container via `docker-compose.yml`:
 
 ```yaml
-- ./plugins/qbank/cffpoc:/var/www/html/public/question/bank/cffpoc
+- ./plugins/qbank/customfieldfilter:/var/www/html/public/question/bank/customfieldfilter
 ```
 
 No manual copying or ownership fixes are needed — edits on the host are picked
@@ -60,7 +60,7 @@ options are 1-based indexes into the field's newline-separated option list).
 ### Automated (PHPUnit)
 
 ```bash
-docker compose exec moodle sh -c 'cd /var/www/html && vendor/bin/phpunit --testsuite qbank_cffpoc_testsuite'
+docker compose exec moodle sh -c 'cd /var/www/html && vendor/bin/phpunit --testsuite qbank_customfieldfilter_testsuite'
 ```
 
 `tests/condition_test.php` covers: a single field/value, multiple values on

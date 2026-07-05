@@ -15,24 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tests for qbank_cffpoc.
+ * Tests for qbank_customfieldfilter.
  *
- * @package    qbank_cffpoc
+ * @package    qbank_customfieldfilter
  * @copyright  2026 Thomas Korner <thomas.korner@edu.zh.ch>
  * @author     Thomas Korner <https://github.com/tkorner>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace qbank_cffpoc;
+namespace qbank_customfieldfilter;
 
 use advanced_testcase;
 use core\output\datafilter;
 use core_customfield\field_controller;
 use PHPUnit\Framework\Attributes\CoversClass;
 
+/**
+ * Tests for {@see customfields_condition}.
+ */
 #[CoversClass(customfields_condition::class)]
 final class condition_test extends advanced_testcase {
-
     /**
      * Create a question custom field of type 'select' in the qbank_customfields/question area.
      *
@@ -42,7 +44,12 @@ final class condition_test extends advanced_testcase {
      * @param int $visibility question_handler::VISIBLETOALL/VISIBLETOTEACHERS/NOTVISIBLE.
      * @return field_controller
      */
-    private function create_select_field(int $categoryid, string $shortname, array $options, int $visibility = 2): field_controller {
+    private function create_select_field(
+        int $categoryid,
+        string $shortname,
+        array $options,
+        int $visibility = 2
+    ): field_controller {
         $generator = $this->getDataGenerator()->get_plugin_generator('core_customfield');
         return $generator->create_field((object) [
             'categoryid' => $categoryid,
@@ -76,21 +83,21 @@ final class condition_test extends advanced_testcase {
         $qgenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $qcategory = $qgenerator->create_question_category();
 
-        // q1: bloom=Remember(1) only.
+        // Q1: bloom=Remember(1) only.
         $q1 = $qgenerator->create_question('truefalse', null, ['category' => $qcategory->id, 'name' => 'q1']);
         $cfgenerator->add_instance_data($bloom, $q1->id, 1);
 
-        // q2: bloom=Understand(2), difficulty=Hard(2) -- matches both bloom:2 and difficulty:2.
+        // Q2: bloom=Understand(2), difficulty=Hard(2) -- matches both bloom:2 and difficulty:2.
         $q2 = $qgenerator->create_question('truefalse', null, ['category' => $qcategory->id, 'name' => 'q2']);
         $cfgenerator->add_instance_data($bloom, $q2->id, 2);
         $cfgenerator->add_instance_data($difficulty, $q2->id, 2);
 
-        // q3: bloom=Understand(2), difficulty=Easy(1) -- matches bloom:2 but NOT difficulty:2.
+        // Q3: bloom=Understand(2), difficulty=Easy(1) -- matches bloom:2 but NOT difficulty:2.
         $q3 = $qgenerator->create_question('truefalse', null, ['category' => $qcategory->id, 'name' => 'q3']);
         $cfgenerator->add_instance_data($bloom, $q3->id, 2);
         $cfgenerator->add_instance_data($difficulty, $q3->id, 1);
 
-        // q4: no custom field data at all.
+        // Q4: no custom field data at all.
         $q4 = $qgenerator->create_question('truefalse', null, ['category' => $qcategory->id, 'name' => 'q4']);
 
         return [$bloom, $difficulty, [$q1, $q2, $q3, $q4]];
@@ -151,7 +158,7 @@ final class condition_test extends advanced_testcase {
 
         $matched = $this->matched_question_ids(["{$bloom->get('id')}:1", "{$bloom->get('id')}:2"]);
 
-        // q1 (bloom=1) and q2+q3 (bloom=2) all match; q4 (no data) does not.
+        // Q1 (bloom=1) and Q2+Q3 (bloom=2) all match; Q4 (no data) does not.
         $this->assertEqualsCanonicalizing([$q1->id, $q2->id, $q3->id], $matched);
     }
 
@@ -168,7 +175,7 @@ final class condition_test extends advanced_testcase {
             "{$difficulty->get('id')}:2",
         ], datafilter::JOINTYPE_ALL);
 
-        // Only q2 has bloom=2 AND difficulty=2; q3 has bloom=2 but difficulty=1.
+        // Only Q2 has bloom=2 AND difficulty=2; Q3 has bloom=2 but difficulty=1.
         $this->assertEqualsCanonicalizing([$q2->id], $matched);
     }
 
@@ -186,7 +193,7 @@ final class condition_test extends advanced_testcase {
             "{$difficulty->get('id')}:2",
         ], datafilter::JOINTYPE_ANY);
 
-        // q2 (bloom=2 and difficulty=2) and q3 (bloom=2) both match at least one; q1 and q4 match
+        // Q2 (bloom=2 and difficulty=2) and Q3 (bloom=2) both match at least one; Q1 and Q4 match
         // neither.
         $this->assertEqualsCanonicalizing([$q2->id, $q3->id], $matched);
     }
@@ -201,7 +208,7 @@ final class condition_test extends advanced_testcase {
 
         $matched = $this->matched_question_ids(["{$bloom->get('id')}:2"], datafilter::JOINTYPE_NONE);
 
-        // q1 (bloom=1) and q4 (no data) don't have bloom=2; q2 and q3 do, so they're excluded.
+        // Q1 (bloom=1) and Q4 (no data) don't have bloom=2; Q2 and Q3 do, so they're excluded.
         $this->assertEqualsCanonicalizing([$q1->id, $q4->id], $matched);
     }
 
