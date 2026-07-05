@@ -105,6 +105,9 @@ class customfields_condition extends condition {
     /**
      * Initial values of the condition: one option per visible value of every configured field.
      *
+     * Only fields of a type supported by {@see get_field_options()} (currently 'select' and
+     * 'checkbox') contribute options; other field types are silently skipped for now.
+     *
      * @return array
      */
     #[\Override]

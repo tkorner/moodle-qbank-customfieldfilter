@@ -32,6 +32,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * Tests for {@see customfields_condition}.
+ *
+ * Covers 'select' and 'checkbox' custom fields only, matching the condition's current
+ * field-type scope; other field types are not yet supported by the filter.
  */
 #[CoversClass(customfields_condition::class)]
 final class condition_test extends advanced_testcase {

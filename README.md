@@ -4,6 +4,10 @@ A Moodle **Question Bank filter plugin** that makes every configured question
 custom field filterable/searchable in the Question Bank UI at once, via a single
 combined filter chip.
 
+> **Field-type scope (current):** only `select` and `checkbox` custom fields are
+> supported. `text`/`date`/other field types are not yet included — see
+> "Known limitations" below.
+
 Working name; being prototyped here for eventual contribution into the
 core-bundled `qbank_customfields` plugin (see "Upstream intent" in `CLAUDE.md`
 for the full rationale and coordination context).
@@ -42,8 +46,9 @@ area `question`).
 
 ## How it works
 
-One combined filter ("Custom fields") lists every visible field's options as a
-flat list, using a composite `fieldid:optionvalue` value per option (e.g.
+One combined filter ("Custom fields") lists every visible field's options
+(`select`/`checkbox` fields only, for now) as a flat list, using a composite
+`fieldid:optionvalue` value per option (e.g.
 `Bloom: Understand`). Selected values are grouped by field when building the
 SQL: values within the same field are OR'd; different fields are combined
 according to the filter's join type (All/Any/None), matching the selector
@@ -76,6 +81,15 @@ set it up once (needs `$CFG->phpunit_prefix` / `$CFG->phpunit_dataroot` in
 ```bash
 docker compose exec moodle php /var/www/html/admin/tool/phpunit/cli/init.php
 ```
+
+### Automated (Behat)
+
+`tests/behat/filter_customfields.feature` automates the manual UI steps below:
+a single value, multiple values on the same field (OR), and the default/Any/
+None join type across two fields. Not runnable in this dev container (no
+Behat dataroot/Selenium/Chrome set up here) — it runs via
+`moodle-plugin-ci behat` in CI. Tagged `@qbank_customfieldfilter` so CI's
+default component-name tag filter picks it up.
 
 ### Manual (UI)
 
