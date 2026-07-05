@@ -61,6 +61,12 @@ Feature: Filter questions by custom field values
     And I am on the "Qbank 1" "core_question > question bank" page
 
   @javascript
+  Scenario: Sanity check - the question list renders before touching the custom fields filter
+    Then I should see "understand only" in the "categoryquestions" "table"
+    And I should see "apply only" in the "categoryquestions" "table"
+    And I should see "no custom field" in the "categoryquestions" "table"
+
+  @javascript
   Scenario: A single custom field value filters to matching questions
     When I apply question bank filter "Custom fields" with value "Bloom: Understand"
     Then I should see "understand only" in the "categoryquestions" "table"
