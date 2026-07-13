@@ -15,15 +15,20 @@ combined filter chip.
 
 ## Upstream intent
 
-This plugin is being built **in coordination with the Moodle qbank/customfields
-core developers**, who have confirmed they want this functionality merged
-directly into `qbank_customfields` (not published as a separate standalone
-plugin). Practical consequences:
+This plugin is a **working prototype**, built with the *intent* to eventually
+propose this functionality for inclusion directly in `qbank_customfields`
+(rather than staying a separate standalone plugin) — but this has **not yet
+been discussed with the Moodle qbank/customfields core developers**. All
+design decisions below (one combined filter, the custom JS filtertype, the
+join-type semantics, etc.) were made unilaterally to get to a working
+prototype quickly, not because core developers requested or reviewed them.
+Sharing this prototype with them for feedback is the logical next step.
 
 - It's prototyped here in `qbank_customfieldfilter` first for fast iteration.
 - Class/method names and structure mirror what already exists in
-  `qbank_customfields` as closely as possible, so porting later is close to
-  copy-paste.
+  `qbank_customfields` as closely as possible, on the assumption that this
+  would make a later contribution closer to copy-paste — this assumption
+  itself hasn't been validated with core developers yet.
 - The code quality bar already targets **Moodle core contribution standards**
   (coding guidelines, full test coverage), not just "good enough for a single
   instance" — see "Coding standards" below.
@@ -72,8 +77,9 @@ chips (one per custom field) by instantiating the same class N times with
 different `$field` arguments. This is a real API constraint, confirmed by
 reading Moodle core's actual `condition.php` and `custom_field_column.php`.
 
-**Decision (confirmed with core devs): build ONE combined filter**, not one
-filter per field.
+**Decision made unilaterally to work around this constraint: build ONE
+combined filter**, not one filter per field. Not yet reviewed by core
+developers.
 
 ### How Moodle Question Bank filters work (since Moodle 4.3)
 
