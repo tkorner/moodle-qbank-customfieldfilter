@@ -41,7 +41,7 @@ use qbank_customfields\customfield\question_handler;
  *
  * {@see get_condition_key()} is abstract and static on the base class, so a single instance of
  * this class must represent every field at once (one composite "fieldid:optionindex" value per
- * option) rather than one instance per field. See the plugin's CLAUDE.md for the full rationale.
+ * option) rather than one instance per field. See the plugin's README.md for the full rationale.
  *
  * Checkbox and select values are stored in {customfield_data}.intvalue.
  */
